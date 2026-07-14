@@ -78,6 +78,24 @@ Prepare ImageNet-1K in the standard folder format:
 
 Pass the path with `--data_path=/path/to/imagenet`.
 
+## Pretrained Models
+
+  ~./code/
+  ├── MEPA-main/
+  │   ├── train.py
+  │   ├── models/
+  │   ├── vae_ch160v4096z32.pth (download from https://huggingface.co/FoundationVision/var/)
+  │   │   ├── dinov3_loader.py
+  │   │   └── ...
+  │   └── ...
+  ├── dinov3/ (git clone https://github.com/facebookresearch/dinov3.git)
+  │   ├── hubconf.py
+  │   ├── dinov3/
+  │   └── ...
+  └── pretrained_models/
+      ├── your_dinov3_weight_file.pth (hf download facebook/dinov3-vitb16-pretrain-lvd1689m)
+      └── ...
+
 
 
 ## Training
@@ -97,7 +115,7 @@ torchrun --nproc_per_node=8 train.py \
   --wpe=0.1 \
   --fp16=1 \
   --alng=1e-3 \
-  --enc_type=dinov3-vit-b \
+  --enc_type=dinov3-vit-b16 \
   --align_start=5 \
   --align_end=7
 # MEPA-d12. Use `--depth=12`. 
@@ -113,7 +131,7 @@ torchrun --nproc_per_node=8  train.py \
   --alng=5e-6 \
   --wpe=0.01 \
   --twde=0.08 \
-  --enc_type=dinov3-vit-b \
+  --enc_type=dinov3-vit-b16 \
   --align_start=5 \
   --align_end=7
 ```

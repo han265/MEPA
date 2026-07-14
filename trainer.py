@@ -126,6 +126,10 @@ class VARTrainer(object):
         features = self.encoder.forward_features(raw_image_)
         z = features['x_norm_patchtokens']
         z = F.normalize(z, dim=-1) 
+        Bz, Nz, Cz = z.shape
+        z_hw = int(Nz ** 0.5)
+        assert z_hw * z_hw == Nz, f"DINO patch tokens must be square, got N={Nz}"
+        z_map = z.permute(0, 2, 1).reshape(Bz, Cz, z_hw, z_hw).contiguous()
         
         with self.var_opt.amp_ctx:
             self.var_wo_ddp.forward
@@ -142,17 +146,18 @@ class VARTrainer(object):
 
             tmp_i = 0
             proj_loss = 0.
-            sum_feat = 0.
+            sum_feat = None
+            max_pn = self.patch_nums[-1]
             for i, pn in enumerate(self.patch_nums):
                 current_feat = f_proj[:, tmp_i: tmp_i + pn*pn]
                 current_feat = F.interpolate(
                     current_feat.permute(0,2,1).reshape(B, 768, pn, pn).contiguous(),
-                      size=(pn, pn), mode='bicubic', align_corners=False)
-                sum_feat = current_feat if i == 0 else sum_feat + current_feat
+                      size=(max_pn, max_pn), mode='bicubic', align_corners=False)
+                sum_feat = current_feat if sum_feat is None else sum_feat + current_feat
                 tmp_i += pn * pn
                 if i >= self.align_start - 1 and i <= self.align_end - 1:
                     z_tilde_j = F.normalize(sum_feat.clone(), dim=-1) 
-                    proj_loss += mean_flat(-(z * z_tilde_j).sum(dim=-1))
+                    proj_loss += mean_flat(-(z_map * z_tilde_j).mean())
                 elif i > self.align_end - 1:
                     break
             

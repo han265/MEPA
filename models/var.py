@@ -284,10 +284,10 @@ class VAR(nn.Module):
         for block_idx, sab in enumerate(self.blocks):
             sab: AdaLNSelfAttn
             sab.attn.proj.weight.data.div_(math.sqrt(2 * depth))
-            sab.moeffn.shared_experts.fc2.weight.data.div_(math.sqrt(2 * depth))
-            if hasattr(sab.moeffn.shared_experts, 'fcg') and sab.moeffn.shared_experts.fcg is not None:
-                nn.init.ones_(sab.moeffn.shared_experts.fcg.bias)
-                nn.init.trunc_normal_(sab.moeffn.shared_experts.fcg.weight, std=1e-5)
+            sab.ffn.shared_experts.fc2.weight.data.div_(math.sqrt(2 * depth))
+            if hasattr(sab.ffn.shared_experts, 'fcg') and sab.ffn.shared_experts.fcg is not None:
+                nn.init.ones_(sab.ffn.shared_experts.fcg.bias)
+                nn.init.trunc_normal_(sab.ffn.shared_experts.fcg.weight, std=1e-5)
             if hasattr(sab, 'ada_lin'):
                 sab.ada_lin[-1].weight.data[2*self.C:].mul_(init_adaln)
                 sab.ada_lin[-1].weight.data[:2*self.C].mul_(init_adaln_gamma)
@@ -296,7 +296,7 @@ class VAR(nn.Module):
             elif hasattr(sab, 'ada_gss'):
                 sab.ada_gss.data[:, :, 2:].mul_(init_adaln)
                 sab.ada_gss.data[:, :, :2].mul_(init_adaln_gamma)
-            for sabffn in sab.moeffn.experts:
+            for sabffn in sab.ffn.experts:
                 sabffn.fc2.weight.data.div_(math.sqrt(2 * depth))
                 if hasattr(sabffn, 'fcg') and sabffn.fcg is not None:
                     nn.init.ones_(sabffn.fcg.bias)

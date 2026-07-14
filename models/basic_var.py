@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from models.helpers import DropPath, drop_path
-from models.moe import SparseMoeBlock
+# from models.moe import SparseMoeBlock
 
 # this file only provides the 3 blocks used in VAR transformer
 __all__ = ['FFN', 'AdaLNSelfAttn', 'AdaLNBeforeHead']
@@ -183,12 +183,13 @@ class AdaLNSelfAttn_MoE(nn.Module):
         num_heads, mlp_ratio=4., drop=0., attn_drop=0., drop_path=0., attn_l2_norm=False,
         flash_if_available=False, fused_if_available=True,
     ):
-        super(AdaLNSelfAttn, self).__init__()
+        super(AdaLNSelfAttn_MoE, self).__init__()
         self.block_idx, self.last_drop_p, self.C = block_idx, last_drop_p, embed_dim
         self.C, self.D = embed_dim, cond_dim
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.attn = SelfAttention(block_idx=block_idx, embed_dim=embed_dim, num_heads=num_heads, attn_drop=attn_drop, proj_drop=drop, attn_l2_norm=attn_l2_norm, flash_if_available=flash_if_available)
-        self.moeffn = SparseMoeBlock(in_features=embed_dim, hidden_features=round(embed_dim * mlp_ratio), drop=drop, fused_if_available=fused_if_available)
+        from models.moe import SparseMoeBlock
+        self.ffn = SparseMoeBlock(in_features=embed_dim, hidden_features=round(embed_dim * mlp_ratio), drop=drop, fused_if_available=fused_if_available)
         
         self.ln_wo_grad = norm_layer(embed_dim, elementwise_affine=False)
         self.shared_aln = shared_aln
@@ -207,7 +208,7 @@ class AdaLNSelfAttn_MoE(nn.Module):
         else:
             gamma1, gamma2, scale1, scale2, shift1, shift2 = self.ada_lin(cond_BD).view(-1, 1, 6, self.C).unbind(2)
         x = x + self.drop_path(self.attn( self.ln_wo_grad(x).mul(scale1.add(1)).add_(shift1), attn_bias=attn_bias ).mul_(gamma1))
-        x = x + self.drop_path(self.moeffn( self.ln_wo_grad(x).mul(scale2.add(1)).add_(shift2) ).mul(gamma2)) # this mul(gamma2) cannot be in-placed when FusedMLP is used
+        x = x + self.drop_path(self.ffn( self.ln_wo_grad(x).mul(scale2.add(1)).add_(shift2) ).mul(gamma2)) # this mul(gamma2) cannot be in-placed when FusedMLP is used
         return x
     
     def extra_repr(self) -> str:

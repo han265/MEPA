@@ -90,7 +90,7 @@ def build_everything(args: arg_util.Args):
         init_adaln=args.aln, init_adaln_gamma=args.alng, init_head=args.hd, init_std=args.ini,
     )
     
-    vae_ckpt = 'vae_ch160v4096z32.pth'
+    vae_ckpt = './vae_ch160v4096z32.pth'
     if dist.is_local_master():
         if not os.path.exists(vae_ckpt):
             os.system(f'wget https://huggingface.co/FoundationVision/var/resolve/main/{vae_ckpt}')

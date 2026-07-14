@@ -25,7 +25,7 @@ import dist
 class Args(Tap):
     data_path: str = '/path/to/imagenet'
     exp_name: str = 'text'
-    enc_type: str = 'dinov3'  # dinov3, dinov2
+    enc_type: str = 'dinov3-vit-b16'  # dinov3, dinov2
     align_start: int = 5
     align_end: int = 7
     
@@ -85,9 +85,9 @@ class Args(Tap):
     
     # would be automatically set in runtime
     cmd: str = ' '.join(sys.argv[1:])  # [automatically set; don't specify this]
-    branch: str = subprocess.check_output(f'git symbolic-ref --short HEAD 2>/dev/null || git rev-parse HEAD', shell=True).decode('utf-8').strip() or '[unknown]' # [automatically set; don't specify this]
-    commit_id: str = subprocess.check_output(f'git rev-parse HEAD', shell=True).decode('utf-8').strip() or '[unknown]'  # [automatically set; don't specify this]
-    commit_msg: str = (subprocess.check_output(f'git log -1', shell=True).decode('utf-8').strip().splitlines() or ['[unknown]'])[-1].strip()    # [automatically set; don't specify this]
+    #branch: str = subprocess.check_output(f'git symbolic-ref --short HEAD 2>/dev/null || git rev-parse HEAD', shell=True).decode('utf-8').strip() or '[unknown]' # [automatically set; don't specify this]
+    #commit_id: str = subprocess.check_output(f'git rev-parse HEAD', shell=True).decode('utf-8').strip() or '[unknown]'  # [automatically set; don't specify this]
+    #commit_msg: str = (subprocess.check_output(f'git log -1', shell=True).decode('utf-8').strip().splitlines() or ['[unknown]'])[-1].strip()    # [automatically set; don't specify this]
     acc_mean: float = None      # [automatically set; don't specify this]
     acc_tail: float = None      # [automatically set; don't specify this]
     L_mean: float = None        # [automatically set; don't specify this]
@@ -180,10 +180,10 @@ class Args(Tap):
     def dump_log(self):
         if not dist.is_local_master():
             return
-        if '1/' in self.cur_ep: # first time to dump log
-            with open(self.log_txt_path, 'w') as fp:
-                json.dump({'is_master': dist.is_master(), 'name': self.exp_name, 'cmd': self.cmd, 'commit': self.commit_id, 'branch': self.branch, 'tb_log_dir_path': self.tb_log_dir_path}, fp, indent=0)
-                fp.write('\n')
+        #if '1/' in self.cur_ep: # first time to dump log
+            #with open(self.log_txt_path, 'w') as fp:
+                #json.dump({'is_master': dist.is_master(), 'name': self.exp_name, 'cmd': self.cmd, 'commit': self.commit_id, 'branch': self.branch, 'tb_log_dir_path': self.tb_log_dir_path}, fp, indent=0)
+                #fp.write('\n')
         
         log_dict = {}
         for k, v in {

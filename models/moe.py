@@ -144,6 +144,7 @@ class SparseMoeBlock(nn.Module):
         self.experts = nn.ModuleList([FFN(in_features, hidden_features, out_features, drop, fused_if_available) for i in range(num_experts)])
         self.gate = MoEGate(embed_dim=in_features, num_experts=num_experts, num_experts_per_tok=num_experts_per_tok)
         self.shared_experts = FFN(in_features, hidden_features, out_features, drop, fused_if_available)
+        self.fused_mlp_func = self.experts[0].fused_mlp_func
     
     def forward(self, hidden_states):
         identity = hidden_states
@@ -165,7 +166,7 @@ class SparseMoeBlock(nn.Module):
             y = AddAuxiliaryLoss.apply(y, aux_loss)
         else:
             y = self.moe_infer(hidden_states, flat_topk_idx, topk_weight.view(-1, 1)).view(*orig_shape)
-        if self.n_shared_experts is not None:
+        if self.shared_experts is not None:
             y = y + self.shared_experts(identity)
         return y
     
