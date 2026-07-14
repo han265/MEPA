@@ -79,7 +79,7 @@ Prepare ImageNet-1K in the standard folder format:
 Pass the path with `--data_path=/path/to/imagenet`.
 
 ## Pretrained Models
-
+###
   ~./code/
   ├── MEPA-main/
   │   ├── train.py
@@ -95,7 +95,7 @@ Pass the path with `--data_path=/path/to/imagenet`.
   └── pretrained_models/
       ├── your_dinov3_weight_file.pth (hf download facebook/dinov3-vitb16-pretrain-lvd1689m)
       └── ...
-
+###
 
 
 ## Training
